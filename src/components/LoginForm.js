@@ -1,22 +1,39 @@
 import React, { Component } from 'react';
 import { View, Text } from 'react-native';
 import firebase from 'firebase';
-import { Card, CardSection, Button, Input } from './common/index';
+import { Card, CardSection, Button, Input, Spinner } from './common/index';
 
 class LoginForm extends Component {
 
-  state={ email: '', password: '' };
+  state={ email: '', password: '', error: '', loading: false };
 
   onButtonPress() {
     const { email, password } = this.state;
 
-    firebase.auth().signInWithEmailAndPassword(email, password)
+    this.setState({ error: '', loading: true });
+
+      firebase.auth().signInWithEmailAndPassword(email, password)
       .catch(() => {
         firebase.auth().createUserWithEmailAndPassword(email, password)
+          .then(() => {
+            this.setState({ error: 'Suck Sex' });
+          })
           .catch(() => {
             this.setState({ error: 'Authentication Failed' });
           });
       });
+  }
+
+  renderButton() {
+    if (this.state.loading) {
+      return <Spinner size="small" />;
+    }
+
+    return (
+      <Button onPress={this.onButtonPress.bind(this)}>
+        Log In
+      </Button>
+    );
   }
 
   render() {
@@ -47,9 +64,7 @@ class LoginForm extends Component {
           </Text>
 
           <CardSection>
-            <Button onPress={this.onButtonPress.bind(this)}>
-              Log In
-            </Button>
+            {this.renderButton()}
           </CardSection>
 
         </Card>
@@ -62,7 +77,8 @@ const styles = {
   errorTextStyle: {
     fontSize: 20,
     color: 'red',
-    fontWeight: '500'
+    fontWeight: '500',
+    textAlign: 'center'
   }
 };
 
